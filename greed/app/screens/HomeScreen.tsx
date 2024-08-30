@@ -3,7 +3,6 @@ import { SafeAreaView, StyleSheet } from 'react-native';
 import MapComponent from '../../components/HomeScreen/Map';
 import BottomSheet from '../../components/HomeScreen/BottomSheet';
 
-
 const HomeScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
@@ -15,8 +14,8 @@ const HomeScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: 'white',
+    flex: 1
+   
   },
 });
 

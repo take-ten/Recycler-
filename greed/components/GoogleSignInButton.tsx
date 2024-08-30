@@ -1,74 +1,75 @@
 import React, { useEffect, useState } from 'react';
-import { TouchableOpacity, Text, View, Button, StyleSheet } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import { useDispatch } from 'react-redux';
-import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
+import { View } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
+import { GoogleSignin, statusCodes, GoogleSigninButton } from '@react-native-google-signin/google-signin';
 import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
 import { auth, db } from '../firebaseConfig';
 import { setDoc, doc, getDoc } from 'firebase/firestore';
-import { signInStart, signInSuccess, signInFailure } from '../store/authSlice';
+import { signInStart, signInSuccess, signInFailure, setUserId, setRole } from '../store/authSlice';
 
-// Initialize Google Sign-In configuration
 GoogleSignin.configure({
-  webClientId: "294221732007-6c0431eiaeaa71g5huf1j20tg4n24r6s.apps.googleusercontent.com",
+  webClientId: process.env.WEB_CLIENT_ID,
   offlineAccess: true,
 });
 
-const GoogleSignUpButton = () => {
+const GoogleSignInButtonComponent = () => {
   const dispatch = useDispatch();
-  const [error, setError] = useState(null);
-  const [userInfo, setUserInfo] = useState(null);
+  const [error, setError] = useState<any>(null);
+  const [userInfo, setUserInfo] = useState<any>(null);
+  const userId = useSelector((state: any) => state.auth.userId);
+  const role = useSelector((state: any) => state.auth.role);
 
   useEffect(() => {
-    // Check if user is already signed in
     const checkIfSignedIn = async () => {
-      const isSignedIn = await GoogleSignin.isSignedIn();
-      if (isSignedIn) {
-        const userInfo = await GoogleSignin.getCurrentUser();
-        const googleCredential = GoogleAuthProvider.credential(userInfo.idToken);
+      const userInfo = await GoogleSignin.getCurrentUser();
+      if (userInfo) {
+        const googleCredential: any = GoogleAuthProvider.credential(userInfo.idToken);
         handleFirebaseAuth(googleCredential);
       }
     };
     checkIfSignedIn();
   }, []);
 
-  const handleFirebaseAuth = async (googleCredential) => {
-    console.log('Starting Firebase authentication with credential:', googleCredential);
+  const handleFirebaseAuth = async (googleCredential: any) => {
     dispatch(signInStart());
     try {
       const result = await signInWithCredential(auth, googleCredential);
-      console.log('Firebase authentication result:', result);
       const firebaseUser = result.user;
 
-      // Check if user already exists in Firestore
       const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
       if (!userDoc.exists()) {
-        console.log('User does not exist in Firestore, creating new user');
-        // Add new user to Firestore
         await setDoc(doc(db, 'users', firebaseUser.uid), {
           uid: firebaseUser.uid,
           name: firebaseUser.displayName,
           email: firebaseUser.email,
           photoURL: firebaseUser.photoURL,
-          role: 'provider', // Assign a default role
-          location: null, // You can update this later with actual location
-          token: googleCredential.idToken // Store the token
+          role: null,
+          location: null,
+          phone: null,
+          status: null,
+          points: 0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          token: googleCredential.idToken
         });
       } else {
-        console.log('User already exists in Firestore');
-        // Update the token if the user already exists
         await setDoc(doc(db, 'users', firebaseUser.uid), {
           token: googleCredential.idToken
         }, { merge: true });
       }
 
-      dispatch(signInSuccess(firebaseUser));
+      // Dispatch only serializable data
+      dispatch(signInSuccess({
+        uid: firebaseUser.uid,
+        displayName: firebaseUser.displayName,
+        email: firebaseUser.email,
+        photoURL: firebaseUser.photoURL
+      }));
+      dispatch(setUserId(firebaseUser.uid));
       setUserInfo(firebaseUser);
-      console.log('Firebase authentication successful:', firebaseUser);
-    } catch (error) {
+    } catch (error: any) {
       dispatch(signInFailure(error.message));
       setError(error.message);
-      console.error('Error during Firebase authentication:', error);
     }
   };
 
@@ -78,7 +79,7 @@ const GoogleSignUpButton = () => {
       const userInfo = await GoogleSignin.signIn();
       const googleCredential = GoogleAuthProvider.credential(userInfo.idToken);
       handleFirebaseAuth(googleCredential);
-    } catch (error) {
+    } catch (error: any) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         console.log('User cancelled the login flow');
       } else if (error.code === statusCodes.IN_PROGRESS) {
@@ -87,49 +88,21 @@ const GoogleSignUpButton = () => {
         console.log('Play services not available or outdated');
       } else {
         setError(error.message);
-        console.error('Error during Google sign-in:', error);
       }
     }
   };
 
-  const handleLogout = async () => {
-    setUserInfo(null);
-    await GoogleSignin.revokeAccess();
-    await GoogleSignin.signOut();
-  };
-
   return (
-    <View style={styles.container}>
-      <Text>{error && JSON.stringify(error)}</Text>
-      {userInfo && <Text>{JSON.stringify(userInfo)}</Text>}
-      {userInfo ? (
-        <Button title="Logout" onPress={handleLogout} />
-      ) : (
-        <TouchableOpacity style={styles.socialButton} onPress={handleGoogleSignIn}>
-          <Icon name="google" size={30} color="#db4437" />
-        </TouchableOpacity>
-      )}
+    <View>
+      <GoogleSigninButton
+        size={GoogleSigninButton.Size.Wide}
+        color={GoogleSigninButton.Color.Dark}
+        onPress={handleGoogleSignIn}
+      />
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  socialButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f9f9f9',
-  },
-});
-
-export default GoogleSignUpButton;
+export default GoogleSignInButtonComponent;
 
 

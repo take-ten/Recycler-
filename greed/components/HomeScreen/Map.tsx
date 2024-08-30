@@ -1,20 +1,62 @@
-import React from 'react';
-import { Dimensions, StyleSheet } from 'react-native';
-import MapView, { Marker, Polyline } from 'react-native-maps';
+import React, { useState, useEffect } from 'react';
+import { Dimensions, StyleSheet, PermissionsAndroid, Platform } from 'react-native';
+import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Avatar } from 'react-native-elements';
+import Geolocation from 'react-native-geolocation-service';
 
 const { width, height } = Dimensions.get('window');
 
 const MapComponent = () => {
+  const [region, setRegion] = useState({
+    latitude: 36.8065,
+    longitude: 10.1815,
+    latitudeDelta: 0.0922,
+    longitudeDelta: 0.0421,
+  });
+
+  useEffect(() => {
+    const requestLocationPermission = async () => {
+      if (Platform.OS === 'android') {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+          {
+            title: 'Location Permission',
+            message: 'This app needs access to your location',
+            buttonNeutral: 'Ask Me Later',
+            buttonNegative: 'Cancel',
+            buttonPositive: 'OK',
+          }
+        );
+        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+          console.log('Location permission denied');
+          return;
+        }
+      }
+      Geolocation.getCurrentPosition(
+        (position) => {
+          setRegion({
+            ...region,
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+        },
+        (error) => {
+          console.log(error.code, error.message);
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+      );
+    };
+
+    requestLocationPermission();
+  }, []);
+
   return (
     <MapView
+      provider={PROVIDER_GOOGLE} // Use Google Maps
       style={styles.map}
-      initialRegion={{
-        latitude: 36.8065, // Latitude for Tunis, Tunisia
-        longitude: 10.1815, // Longitude for Tunis, Tunisia
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421,
-      }}
+      showsUserLocation={true}
+      showsMyLocationButton={true}
+      region={region}
     >
       {/* Polyline */}
       <Polyline

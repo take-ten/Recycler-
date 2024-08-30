@@ -1,70 +1,104 @@
 import { createSlice } from '@reduxjs/toolkit';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Importing AsyncStorage
 
 const initialState = {
   user: null,
-  isLoggedIn: false,
+  userId: null,
+  role: null,
+  loading: false,
   error: null,
   location: null,
-  role: null,
   geoLocation: null,
+  isLoggedIn: false,
 };
 
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    signUpStart(state) {
+    signInStart(state) {
+      state.loading = true;
       state.error = null;
+    },
+    signInSuccess(state, action) {
+      state.loading = false;
+      state.user = {
+        uid: action.payload.uid,
+        email: action.payload.email,
+        displayName: action.payload.displayName,
+        photoURL: action.payload.photoURL,
+      };
+      state.userId = action.payload.uid;
+      state.isLoggedIn = true;
+      AsyncStorage.setItem('user', JSON.stringify(state.user)); // Save user data to AsyncStorage
+    },
+    signInFailure(state, action) {
+      state.loading = false;
+      state.error = action.payload;
+    },
+    signUpStart(state) {
+      state.loading = true;
+      state.error = null;
+    },
+    signUpSuccess(state, action) {
+      state.loading = false;
+      state.user = {
+        uid: action.payload.uid,
+        email: action.payload.email,
+        displayName: action.payload.displayName,
+        photoURL: action.payload.photoURL,
+      };
+      state.userId = action.payload.uid;
+      state.isLoggedIn = true;
+      AsyncStorage.setItem('user', JSON.stringify(state.user)); // Save user data to AsyncStorage
+    },
+    signUpFailure(state, action) {
+      state.loading = false;
+      state.error = action.payload;
+    },
+    setUserId(state, action) {
+      state.userId = action.payload;
+      AsyncStorage.setItem('userId', action.payload); // Save userId to AsyncStorage
+    },
+    setRole(state, action) {
+      state.role = action.payload;
+      AsyncStorage.setItem('role', action.payload); // Save role to AsyncStorage
     },
     login(state, action) {
       state.user = action.payload;
       state.isLoggedIn = true;
-    },
-    signUpSuccess(state, action) {
-      state.isLoggedIn = true;
-      state.user = action.payload;
-    },
-    signUpFailure(state, action) {
-      state.error = action.payload;
-    },
-    signInStart(state) {
-      state.error = null;
-    },
-    signInSuccess(state, action) {
-      state.user = action.payload;
-      state.isLoggedIn = true;
-    },
-    signInFailure(state, action) {
-      state.error = action.payload;
+      AsyncStorage.setItem('user', JSON.stringify(action.payload)); // Save user data to AsyncStorage
     },
     logout(state) {
       state.user = null;
+      state.userId = null; // Clear userId
+      state.role = null; // Clear role
       state.isLoggedIn = false;
+      AsyncStorage.removeItem('user'); // Remove user data from AsyncStorage
+      AsyncStorage.removeItem('userId'); // Remove userId from AsyncStorage
+      AsyncStorage.removeItem('role'); // Remove role from AsyncStorage
     },
     setLocation(state, action) {
       state.location = action.payload;
     },
-    setRole(state, action) {
-      state.role = action.payload;
-    },
     setGeoLocation(state, action) {
       state.geoLocation = action.payload;
     },
-
   },
 });
 
 export const {
-  signUpStart,
-  signUpSuccess,
-  signUpFailure,
   signInStart,
   signInSuccess,
   signInFailure,
-  logout,
-  login,
-  setLocation,
+  signUpStart,
+  signUpSuccess,
+  signUpFailure,
+  setUserId,
   setRole,
+  login,
+  logout,
+  setLocation,
   setGeoLocation,
 } = authSlice.actions;
 

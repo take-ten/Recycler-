@@ -17,7 +17,10 @@ export default{
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.greed.firebase",
-      "googleServicesFile": "GoogleService-Info.plist"
+      "googleServicesFile": "GoogleService-Info.plist",
+      "config": {
+        "googleMapsApiKey": "AIzaSyBF1NdA9nRIW-9UxWSQFwNHaD7vlEcqfJs"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -25,7 +28,43 @@ export default{
         "backgroundColor": "#ffffff"
       },
       "package": "com.greed.firebase",
-      "googleServicesFile": "google-services.json"
+      "googleServicesFile": "google-services.json",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBF1NdA9nRIW-9UxWSQFwNHaD7vlEcqfJs"
+        }
+      },
+      "permissions": [
+        "ACCESS_BACKGROUND_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_MEDIA_LOCATION",
+        "ACTIVITY_RECOGNITION",
+        "ADD_VOICEMAIL",
+        "ANSWER_PHONE_CALLS",
+        "BODY_SENSORS",
+        "CALL_PHONE",
+        "CAMERA",
+        "GET_ACCOUNTS",
+        "PROCESS_OUTGOING_CALLS",
+        "READ_CALENDAR",
+        "READ_CALL_LOG",
+        "READ_CONTACTS",
+        "READ_EXTERNAL_STORAGE",
+        "READ_PHONE_NUMBERS",
+        "READ_PHONE_STATE",
+        "READ_SMS",
+        "RECEIVE_MMS",
+        "RECEIVE_SMS",
+        "RECEIVE_WAP_PUSH",
+        "RECORD_AUDIO",
+        "SEND_SMS",
+        "USE_SIP",
+        "WRITE_CALENDAR",
+        "WRITE_CALL_LOG",
+        "WRITE_CONTACTS",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "bundler": "metro",

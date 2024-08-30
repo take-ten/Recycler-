@@ -1,34 +1,96 @@
-import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth, db } from '../../firebaseConfig';
+import { setDoc, doc } from 'firebase/firestore';
 import GoogleSignInButton from '../../components/GoogleSignInButton';
+import CryptoJS from 'crypto-js'; // Import crypto-js
 
 const SignUp = () => {
   const navigation = useNavigation();
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  const handleSignUp = async () => {
+    if (password !== confirmPassword) {
+      Alert.alert('Erreur', 'Les mots de passe ne correspondent pas.');
+      return;
+    }
+
+    try {
+      const hashedPassword = CryptoJS.SHA256(password).toString(); // Hash the password
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      const user = result.user;
+
+      await setDoc(doc(db, 'users', user.uid), {
+        name: username,
+        uid: user.uid,
+        email: user.email,
+        password: hashedPassword, 
+        photoURL: null,
+        role: null, 
+        location: null,
+        status: null,
+        geolocation: null,
+        phone: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        isActive: true,
+        points: 0,
+      });
+
+      // Navigate to the role selection screen or another screen
+      navigation.navigate('RoleScreen', { userId: user.uid });
+    } catch (error) {
+      Alert.alert('Erreur', error.message);
+    }
+  };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Salut, Inscrivez-vous pour commencer !</Text>
-      <TextInput style={styles.input} placeholder="Nom d'utilisateur" />
-      <TextInput style={styles.input} placeholder="E-Mail ou Tel" keyboardType="email-address" />
-      <TextInput style={styles.input} placeholder="Mot de passe" secureTextEntry />
-      <TextInput style={styles.input} placeholder="Veuillez confirmer votre mot de passe" secureTextEntry />
-      <TouchableOpacity style={styles.registerButton} onPress={() => navigation.navigate('RoleScreen')}>
+      <TextInput
+        style={styles.input}
+        placeholder="Nom d'utilisateur"
+        value={username}
+        onChangeText={setUsername}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="E-Mail ou Tel"
+        keyboardType="email-address"
+        value={email}
+        onChangeText={setEmail}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Mot de passe"
+        secureTextEntry
+        value={password}
+        onChangeText={setPassword}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Veuillez confirmer votre mot de passe"
+        secureTextEntry
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
+      />
+      <TouchableOpacity style={styles.registerButton} onPress={handleSignUp}>
         <Text style={styles.registerButtonText}>Enregistrer</Text>
       </TouchableOpacity>
       <Text style={styles.orText}>ou inscrivez-vous avec</Text>
       <View style={styles.socialButtonsContainer}>
-        <TouchableOpacity style={styles.socialButton}>
-          <Icon name="facebook" size={30} color="#3b5998" />
-        </TouchableOpacity>
-        <GoogleSignInButton />
-        <TouchableOpacity style={styles.socialButton}>
-          <Icon name="apple" size={30} color="#000" />
-        </TouchableOpacity>
+        <GoogleSignInButton onPress={() => { /* Handle Google Sign-In */ }} />
       </View>
       <Text style={styles.footerText}>
-        Vous avez déjà un compte ? <Text style={styles.footerLink} onPress={() => navigation.navigate('SignIn')}>Connectez-vous !</Text>
+        Vous avez déjà un compte ?{' '}
+        <Text style={styles.footerLink} onPress={() => navigation.navigate('SignIn')}>
+          Connectez-vous !
+        </Text>
       </Text>
     </View>
   );
@@ -39,12 +101,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: '#fff',
-  },
-  backButton: {
-    marginBottom: 20,
-  },
-  backButtonText: {
-    fontSize: 24,
   },
   title: {
     fontSize: 24,
@@ -80,14 +136,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     marginBottom: 20,
-  },
-  socialButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f9f9f9',
   },
   footerText: {
     textAlign: 'center',

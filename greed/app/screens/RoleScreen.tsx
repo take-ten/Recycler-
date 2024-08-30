@@ -1,40 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Alert } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { CheckBox } from 'react-native-elements';
-import { useDispatch, useSelector } from 'react-redux'; // Import useSelector
-import { login } from '../store/authSlice';
-
+import { setDoc, doc } from 'firebase/firestore';
+import { db } from '../../firebaseConfig';
+import { useDispatch } from 'react-redux';
+import { setRole } from '../../store/authSlice';
 
 const RoleScreen: React.FC = () => {
   const navigation = useNavigation();
+  const route = useRoute();
+  const { userId } = route.params as { userId: string };
   const [isProviderChecked, setIsProviderChecked] = useState<boolean>(false);
   const [isCollecteurChecked, setIsCollecteurChecked] = useState<boolean>(false);
   const dispatch = useDispatch();
 
-  // Check if user is logged in
-  const isLoggedIn = useSelector((state) => state.auth.isLoggedIn); // Accessing the authentication state
+  useEffect(() => {
+    if (!userId) {
+      console.error('User ID is not available');
+    }
+  }, [userId]);
 
-  const handleRoleSelection = () => {
+  const handleRoleSelection = async () => {
     const role = isProviderChecked ? 'Provider' : isCollecteurChecked ? 'Collecteur' : '';
-    
-    if (role === '') {
+
+    if (!role) {
       Alert.alert('Erreur', 'Veuillez sélectionner votre rôle.');
       return;
     }
 
-    // dispatch(login(role)); // Dispatch login action
+    try {
+      if (!userId) {
+        throw new Error('User ID is not available');
+      }
 
-    if (role === 'Provider') {
-      navigation.navigate('ProviderDef',{role:role});
-    } else {
-      navigation.navigate('CollectorDef',{role:role});                         // soit on passe le Role comme props , soit par Redux ( a voir avec skander )
+      await setDoc(doc(db, 'users', userId), { role }, { merge: true });
+      dispatch(setRole(role));
+      navigation.navigate(role === 'Provider' ? 'ProviderDef' : 'CollectorDef'); // Navigate to a common screen
+    } catch (error) {
+      console.error('Error updating role:', error);
+      Alert.alert('Erreur', 'Une erreur est survenue lors de la mise à jour du rôle.');
     }
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Centered text and checkboxes */}
       <View style={styles.centerContainer}>
         <Text style={styles.text}>Vous êtes ?</Text>
         <View style={styles.checkboxContainer}>
@@ -66,8 +76,6 @@ const RoleScreen: React.FC = () => {
           />
         </View>
       </View>
-
-      {/* Bottom button */}
       <TouchableOpacity style={styles.button} onPress={handleRoleSelection}>
         <Text style={styles.buttonText}>Suivant</Text>
       </TouchableOpacity>

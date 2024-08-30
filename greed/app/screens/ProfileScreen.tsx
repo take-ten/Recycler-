@@ -2,17 +2,17 @@ import React from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useDispatch } from 'react-redux';
-import { logout } from '../../store/authSlice'
-// import { handleLogout } from '../store/authActions';
-
-
+import { logout } from '../../store/authSlice';
 
 const ProfileScreen = () => {
   const dispatch = useDispatch();
 
-  const handleLogOut = () => {
-
-    dispatch(logout());
+  const handleLogOut = async () => {
+try {
+  await dispatch(logout());
+} catch (error) {
+  console.error('Error during logout:', error);
+}
   };
 
   return (
@@ -67,7 +67,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
-    
   },
   inputContainer: {
     marginBottom: 20,
