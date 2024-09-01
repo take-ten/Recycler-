@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Dimensions, StyleSheet, Alert, Text, View, TouchableOpacity } from 'react-native';
 import MapView, { PROVIDER_GOOGLE, Polyline, Marker, Callout, Circle } from 'react-native-maps';
-import { getDirections, Directions } from '../../compo ahlem/directionsService';
+import { getDirections, Directions } from './directionsService';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 
