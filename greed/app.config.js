@@ -12,7 +12,7 @@ export default{
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    plugins: ["@react-native-google-signin/google-signin"],
+    plugins: ["@react-native-google-signin/google-signin", "expo-image-picker"],
     assetBundlePatterns: ["**/*"],
     "ios": {
       "supportsTablet": true,
@@ -63,7 +63,19 @@ export default{
         "WRITE_CALENDAR",
         "WRITE_CALL_LOG",
         "WRITE_CONTACTS",
-        "WRITE_EXTERNAL_STORAGE"
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_MEDIA_IMAGES",
+        "READ_MEDIA_VIDEO",
+        "READ_MEDIA_AUDIO",
+        "READ_MEDIA_DOCUMENTS",
+        "READ_MEDIA_FILES",
+        "READ_MEDIA_IMAGES",
+        "READ_MEDIA_VIDEO",
+        "READ_MEDIA_AUDIO",
+        "READ_MEDIA_DOCUMENTS",
+        "READ_MEDIA_FILES",
+        "READ_MEDIA_IMAGES",
+        "READ_MEDIA_VIDEO",
       ]
     },
     "web": {

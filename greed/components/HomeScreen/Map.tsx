@@ -69,6 +69,17 @@ const styles = StyleSheet.create({
     width: width,
     height: height * 0.75,
   },
+  button: {
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    padding: 10,
+    margin: 5,
+    borderRadius: 5,
+    elevation: 2,
+  },
+  buttonText: {
+    fontSize: 16,
+    color: 'black',
+  },
 });
 
 export default MapComponent;

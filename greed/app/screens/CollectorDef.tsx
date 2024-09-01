@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Image, Modal, F
 import { useDispatch } from 'react-redux';
 // import { setLocation } from '../store/authSlice';
 import { locations } from '../../components/locations';
-
+import { login } from '../../store/authSlice';
 const CollectorDef: React.FC = () => {
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -22,7 +22,7 @@ const CollectorDef: React.FC = () => {
     }
   };
 
-  const renderLocationItem = ({ item }: { item: { value: string; label: string } }) => (
+  const renderLocationItem = ({ item }) => (
     <TouchableOpacity
       style={styles.locationItem}
       onPress={() => {

@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Importing AsyncStorage
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const initialState = {
   user: null,
@@ -69,21 +69,6 @@ const authSlice = createSlice({
       state.isLoggedIn = true;
       AsyncStorage.setItem('user', JSON.stringify(action.payload)); // Save user data to AsyncStorage
     },
-    logout(state) {
-      state.user = null;
-      state.userId = null; // Clear userId
-      state.role = null; // Clear role
-      state.isLoggedIn = false;
-      AsyncStorage.removeItem('user'); // Remove user data from AsyncStorage
-      AsyncStorage.removeItem('userId'); // Remove userId from AsyncStorage
-      AsyncStorage.removeItem('role'); // Remove role from AsyncStorage
-    },
-    setLocation(state, action) {
-      state.location = action.payload;
-    },
-    setGeoLocation(state, action) {
-      state.geoLocation = action.payload;
-    },
   },
 });
 
@@ -97,9 +82,6 @@ export const {
   setUserId,
   setRole,
   login,
-  logout,
-  setLocation,
-  setGeoLocation,
 } = authSlice.actions;
 
 export default authSlice.reducer;

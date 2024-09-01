@@ -1,41 +1,82 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, SafeAreaView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useDispatch } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { auth, db } from '@/firebaseConfig';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { useDispatch, useSelector } from 'react-redux';
+import { getAuth } from 'firebase/auth';
+import { logout } from '@/store/authSlice';
 
-const RewardScreen = () => {
-  const navigation = useNavigation();
+
+const HomeProvider = () => {
   const dispatch = useDispatch();
+  const navigation = useNavigation();
   const [role, setRole] = useState(null);
+  const [isCollectorCalled, setIsCollectorCalled] = useState(false);
+  const [points, setPoints] = useState(0); // Assuming you'll fetch this value from Firestore
+  const [gg, setGG] = useState ('');
 
   useEffect(() => {
-    const fetchRole = async () => {
-      const x = await AsyncStorage.getItem('role');
-      setRole(x);
+    const fetchPoints = async () => {
+      const userId = auth.currentUser?.uid;
+      console.log('userId',userId);
+      const userRef = doc(db, 'users', userId as string);
+      const userDoc = await getDoc(userRef);
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        setPoints(userData.points);
+        setRole(userData.role);
+        
+      }
     };
-    fetchRole();
+    fetchPoints();
   }, []);
+
+  const roleFromState = useSelector((state: any) => state.auth.role);
+
+  useEffect(() => {
+    setRole(roleFromState);
+  }, [roleFromState]);
 
   useEffect(() => {
     if (role !== 'Provider') {
-      // dispatch(isLoggedIn(false));
-      navigation.navigate('Onboarding');
+      // dispatch(logout());
+      // navigation.navigate('Onboarding' as never);
+
+      console.log('role from logout console log',role);
     }
-  }, [role]);
+  }, [role, navigation]);
 
-  const [isCollectorCalled, setIsCollectorCalled] = useState(false);
-
-  const handleCollectorButtonPress = () => {
-    setIsCollectorCalled(prevState => !prevState);
+  const handleCollectorButtonPress = async () => {
+    try {
+      const userId = auth.currentUser?.uid;
+      if (userId) {
+        const userRef = doc(db, 'users', userId);
+        const userDoc = await getDoc(userRef);
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          const newStatus = userData.status === 'ready' ? null : 'ready';
+          await updateDoc(userRef, {
+            status: newStatus,
+          });
+          setIsCollectorCalled(newStatus === 'ready'); // Update the button's state to change its color
+        }
+      }
+    } catch (error) {
+      console.error('Error updating user status:', error);
+    }
   };
-  const points = 36;
-
+  const name = getAuth().currentUser?.displayName;
+  console.log(name);
+  console.log(gg);
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
+      <View style={styles.pointsContainer}>
         <Text style={styles.pointsText}>Vos points : {points}</Text>
-        <Text style={styles.greeting}>Bonjour Mr, Provider</Text>
+      </View>
+      <View style={styles.content}>
+        <Text style={styles.greeting}>Bonjour Mr, {name}</Text>
         
         <Text style={styles.instructionText}>
           {isCollectorCalled 
@@ -50,9 +91,9 @@ const RewardScreen = () => {
           ]}
           onPress={handleCollectorButtonPress}
         >
-          {({ pressed }) => (
-            <Text style={[styles.buttonText, pressed && styles.buttonTextPressed]}>ICI</Text>
-          )}
+          <Text style={[styles.buttonText]}>
+            ICI
+          </Text>
         </Pressable>
         
         <Text style={styles.instructionText2}>
@@ -65,9 +106,9 @@ const RewardScreen = () => {
             pressed && styles.buttonPressed
           ]}
         >
-          {({ pressed }) => (
-            <Text style={[styles.buttonText, pressed && styles.buttonTextPressed]}>ICI</Text>
-          )}
+          <Text style={[styles.buttonText]}>
+            ICI
+          </Text>
         </Pressable>
       </View>
     </SafeAreaView>
@@ -79,37 +120,37 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
   },
+  pointsContainer: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    zIndex: 1,
+  },
+  pointsText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
   content: {
     flex: 1,
     padding: 20,
     justifyContent: 'center',
-  },
-  pointsText: {
-    fontSize: 16,
-    bottom: 100,
-    fontWeight: 'bold',
-    left: 180,
+    alignItems: 'center',
   },
   greeting: {
-    bottom: 80,
-    left: 2,
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20, 
+    marginBottom: 20,
+    textAlign: 'center',
   },
   instructionText: {
-    top: 30,
     fontSize: 21,
     marginBottom: 10,
     textAlign: 'center',
-    height: 50, // Fixed height
   },
   instructionText2: {
-    top: 50,
     fontSize: 21,
     marginBottom: 10,
     textAlign: 'center',
-    height: 50, // Fixed height
   },
   button: {
     padding: 8,
@@ -125,7 +166,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    marginTop: 20,
   },
   buttonPressed: {
     opacity: 0.8,
@@ -133,24 +173,18 @@ const styles = StyleSheet.create({
   },
   greenButton: {
     backgroundColor: '#4CAF50',
-    top:30
   },
   redButton: {
     backgroundColor: 'red',
-    top:32
   },
   yellowButton: {
     backgroundColor: '#FFC107',
-    top: 40,
   },
   buttonText: {
     color: 'white',
     fontWeight: 'bold',
     fontSize: 14,
   },
-  buttonTextPressed: {
-    color: 'rgba(255, 255, 255, 0.8)',
-  },
 });
 
-export default RewardScreen;
+export default HomeProvider;

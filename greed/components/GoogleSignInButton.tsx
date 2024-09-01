@@ -6,14 +6,16 @@ import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
 import { auth, db } from '../firebaseConfig';
 import { setDoc, doc, getDoc } from 'firebase/firestore';
 import { signInStart, signInSuccess, signInFailure, setUserId, setRole } from '../store/authSlice';
+import { useNavigation } from '@react-navigation/native';
 
 GoogleSignin.configure({
-  webClientId: process.env.WEB_CLIENT_ID,
+    webClientId: "294221732007-6c0431eiaeaa71g5huf1j20tg4n24r6s.apps.googleusercontent.com",
   offlineAccess: true,
 });
 
 const GoogleSignInButtonComponent = () => {
   const dispatch = useDispatch();
+  const navigation = useNavigation();
   const [error, setError] = useState<any>(null);
   const [userInfo, setUserInfo] = useState<any>(null);
   const userId = useSelector((state: any) => state.auth.userId);
@@ -38,35 +40,23 @@ const GoogleSignInButtonComponent = () => {
 
       const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
       if (!userDoc.exists()) {
-        await setDoc(doc(db, 'users', firebaseUser.uid), {
-          uid: firebaseUser.uid,
-          name: firebaseUser.displayName,
-          email: firebaseUser.email,
-          photoURL: firebaseUser.photoURL,
-          role: null,
-          location: null,
-          phone: null,
-          status: null,
-          points: 0,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          token: googleCredential.idToken
-        });
+        // Navigate to RoleScreen before setting the user document
+        navigation.navigate('RoleScreen', { userId: firebaseUser.uid, googleCredential });
       } else {
         await setDoc(doc(db, 'users', firebaseUser.uid), {
           token: googleCredential.idToken
         }, { merge: true });
-      }
 
-      // Dispatch only serializable data
-      dispatch(signInSuccess({
-        uid: firebaseUser.uid,
-        displayName: firebaseUser.displayName,
-        email: firebaseUser.email,
-        photoURL: firebaseUser.photoURL
-      }));
-      dispatch(setUserId(firebaseUser.uid));
-      setUserInfo(firebaseUser);
+        // Dispatch only serializable data
+        dispatch(signInSuccess({
+          uid: firebaseUser.uid,
+          displayName: firebaseUser.displayName,
+          email: firebaseUser.email,
+          photoURL: firebaseUser.photoURL
+        }));
+        dispatch(setUserId(firebaseUser.uid));
+        setUserInfo(firebaseUser);
+      }
     } catch (error: any) {
       dispatch(signInFailure(error.message));
       setError(error.message);

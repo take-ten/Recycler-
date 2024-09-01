@@ -5,7 +5,7 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '../../firebaseConfig';
 import { setDoc, doc } from 'firebase/firestore';
 import GoogleSignInButton from '../../components/GoogleSignInButton';
-import CryptoJS from 'crypto-js'; // Import crypto-js
+import CryptoJS from 'crypto-js';
 
 const SignUp = () => {
   const navigation = useNavigation();
@@ -14,6 +14,7 @@ const SignUp = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
+  // Function to handle user sign up
   const handleSignUp = async () => {
     if (password !== confirmPassword) {
       Alert.alert('Erreur', 'Les mots de passe ne correspondent pas.');
@@ -25,6 +26,7 @@ const SignUp = () => {
       const result = await createUserWithEmailAndPassword(auth, email, password);
       const user = result.user;
 
+      // Save user data to Firestore
       await setDoc(doc(db, 'users', user.uid), {
         name: username,
         uid: user.uid,
@@ -42,7 +44,7 @@ const SignUp = () => {
         points: 0,
       });
 
-      // Navigate to the role selection screen or another screen
+      // Navigate to the role selection screen
       navigation.navigate('RoleScreen', { userId: user.uid });
     } catch (error) {
       Alert.alert('Erreur', error.message);

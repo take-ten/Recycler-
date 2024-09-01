@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Button } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, Button, Alert } from 'react-native';
 import MapView, { Region } from 'react-native-maps';
+import * as Location from 'expo-location';
 
 export default function MapScreen() {
   const initialRegion = {
@@ -12,6 +13,23 @@ export default function MapScreen() {
 
   const [region, setRegion] = useState<Region>(initialRegion);
 
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission to access location was denied');
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setRegion({
+        ...region,
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+    })();
+  }, []);
+
   const zoomIn = () => {
     setRegion({
       ...region,
@@ -19,6 +37,7 @@ export default function MapScreen() {
       longitudeDelta: region.longitudeDelta / 2,
     });
   };
+
   const zoomOut = () => {
     setRegion({
       ...region,
@@ -26,6 +45,7 @@ export default function MapScreen() {
       longitudeDelta: region.longitudeDelta * 2,
     });
   };
+
   return (
     <View style={styles.container}>
       <MapView
