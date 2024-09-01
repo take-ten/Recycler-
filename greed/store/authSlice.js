@@ -11,7 +11,6 @@ const initialState = {
   geoLocation: null,
   isLoggedIn: false,
 };
-
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -100,6 +99,7 @@ export const {
   logout,
   setLocation,
   setGeoLocation,
+  isLoggedIn,
 } = authSlice.actions;
 
 export default authSlice.reducer;

@@ -8,7 +8,7 @@ import { setDoc, doc, getDoc } from 'firebase/firestore';
 import { signInStart, signInSuccess, signInFailure, setUserId, setRole } from '../store/authSlice';
 
 GoogleSignin.configure({
-  webClientId: process.env.WEB_CLIENT_ID,
+  webClientId: "294221732007-6c0431eiaeaa71g5huf1j20tg4n24r6s.apps.googleusercontent.com",
   offlineAccess: true,
 });
 

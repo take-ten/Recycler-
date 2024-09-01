@@ -24,10 +24,10 @@ export const handleGoogleLogin = () => async (dispatch) => {
 
   try {
     const [request, response, promptAsync] = Google.useAuthRequest({
-      expoClientId: process.env.EXPO_CLIENT_ID,
-      iosClientId: process.env.IOS_CLIENT_ID,
-      androidClientId: process.env.ANDROID_CLIENT_ID,
-      webClientId: process.env.WEB_CLIENT_ID,
+      expoClientId: "294221732007-6c0431eiaeaa71g5huf1j20tg4n24r6s.apps.googleusercontent.com",
+      iosClientId: "294221732007-u2v5cib99qgkcdmuh42roqll40t7a2gf.apps.googleusercontent.com",
+      androidClientId: "294221732007-sovs9d1fdop78toulo6iavn8ducnbeiq.apps.googleusercontent.com",
+      webClientId: "294221732007-6c0431eiaeaa71g5huf1j20tg4n24r6s.apps.googleusercontent.com",
     });
 
     if (response?.type === 'success') {

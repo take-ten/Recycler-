@@ -18,7 +18,7 @@ const ProviderDef: React.FC = () => {
       <Text style={styles.locationText}>{item.label}</Text>
     </TouchableOpacity>
   );
-
+console.log(selectedLocation)
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.birds}>

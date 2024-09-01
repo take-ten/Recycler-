@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import MessageScreen from '../app/screens/ChatScreen';
 import ProfileScreen from '../app/screens/ProfileScreen';
 import HomeStackNavigator from './HomeStackNavigator';
+import HistoryScreen from '@/app/screens/HistoryScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -31,13 +32,14 @@ export default function BottomTabNavigator() {
         name="Home"
         component={HomeStackNavigator}
         options={{
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home" color={color} size={size} />
           ),
         }}
-      />
-      <Tab.Screen name="History" component={MessageScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+       />
+      <Tab.Screen name="History" component={HistoryScreen} options={{ headerShown: false }} />
+      <Tab.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false }} />
     </Tab.Navigator>
   );
 }

@@ -1,35 +1,99 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TextInput, TouchableOpacity, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useDispatch } from 'react-redux';
+import { addMessage } from '../../store/chatSlice';
+import { getDocs, collection, query, where, addDoc, doc, updateDoc } from 'firebase/firestore';
+import { db } from '../../firebaseConfig';
+import { getAuth } from 'firebase/auth';
+import { useRoute } from '@react-navigation/native';
 
-const ChatScreen = () => {
-  const [messages, setMessages] = useState([
-    { id: '1', text: 'bonjour ! je passe prendre le colis', sender: 'me' },
-    { id: '2', text: 'bonjour, oui, vous arrivez quand ?', sender: 'other' },
-    { id: '3', text: "je suis en route, j'arrive dans une heure", sender: 'me' },
-  ]);
+const ChatScreen = ({key}:{key:any}) => {
+  const dispatch = useDispatch();
+  const route = useRoute();
+  const getter = route.params;
+  const chatId= JSON.parse(JSON.stringify(getter));
+
+  const [messages, setMessages] = useState<any[]>([]);
   const [inputText, setInputText] = useState('');
+  const userId = getAuth().currentUser?.uid;
+//lets fetch the messages from the chat using the chatId
 
-  const handleSend = () => {
-    if (inputText.trim()) {
-      setMessages([...messages, { id: Date.now().toString(), text: inputText, sender: 'me' }]);
-      setInputText('');
+useEffect(() => {
+  const fetchMessages = async () => {
+    try {
+      const q = query(collection(db, 'chats'), where('id', '==', chatId));
+      const querySnapshot = await getDocs(q);
+      const chatData = querySnapshot.docs[0]?.data();
+      setMessages(chatData?.messages || []);
+
+    } catch (error) {
+      console.error('Error fetching messages:', error);
     }
   };
 
-  const renderItem = ({ item }) => (
-    <View style={[styles.messageBubble, item.sender === 'me' ? styles.myMessage : styles.otherMessage]}>
+
+  if (chatId) {
+    fetchMessages();
+  }
+}, []);
+
+  useEffect(() => {
+    if (!chatId) {
+      console.error('Chat or chat.id is undefined');
+      return;
+    }
+
+    const fetchMessages = async () => {
+      try {
+        const q = query(collection(db, 'chats'), where('id', '==', chatId));
+        const querySnapshot = await getDocs(q);
+        const chatData = querySnapshot.docs[0]?.data();
+        setMessages(chatData?.messages || []);
+      } catch (error) {
+        console.error('Error fetching messages:', error);
+      }
+    };
+
+    fetchMessages();
+  }, [chatId]);
+
+  const handleSend = async () => {
+    if (inputText.trim()) {
+      const newMessage = {
+        text: inputText,
+        sender: userId,
+        timestamp: new Date().toISOString(),
+      };
+
+      try {
+        const chatRef = doc(db, 'chats', chatId);
+        await updateDoc(chatRef, {
+          messages: [...messages, newMessage],
+        });
+
+        dispatch(addMessage({ chatId: chatId, message: newMessage }));
+        setMessages(prevMessages => [...prevMessages, { id: Date.now().toString(), ...newMessage }]);
+        setInputText('');
+      } catch (error) {
+        console.error('Error sending message:', error);
+      }
+    }
+  };
+
+  const renderItem = ({ item }: { item: any }) => (
+    <View style={[styles.messageBubble, item.sender === userId ? styles.myMessage : styles.otherMessage]}>
       <Text style={styles.messageText}>{item.text}</Text>
     </View>
   );
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.header}>Provider 2</Text>
+      <Text style={styles.header}>Chat with {chatId.name?.receiverId || 'Unknown'}</Text>
       <FlatList
         data={messages}
         renderItem={renderItem}
-        keyExtractor={item => item.id}
+        keyExtractor={item => item.timestamp}
         contentContainerStyle={styles.messagesContainer}
       />
       <View style={styles.inputContainer}>
