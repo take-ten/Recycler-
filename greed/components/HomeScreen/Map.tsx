@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Dimensions, StyleSheet, PermissionsAndroid, Platform } from 'react-native';
+import { Dimensions, StyleSheet, Platform } from 'react-native';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Avatar } from 'react-native-elements';
-import Geolocation from 'react-native-geolocation-service';
+import * as Location from 'expo-location';
 
 const { width, height } = Dimensions.get('window');
 
@@ -16,35 +16,18 @@ const MapComponent = () => {
 
   useEffect(() => {
     const requestLocationPermission = async () => {
-      if (Platform.OS === 'android') {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-          {
-            title: 'Location Permission',
-            message: 'This app needs access to your location',
-            buttonNeutral: 'Ask Me Later',
-            buttonNegative: 'Cancel',
-            buttonPositive: 'OK',
-          }
-        );
-        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-          console.log('Location permission denied');
-          return;
-        }
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        console.log('Location permission denied');
+        return;
       }
-      Geolocation.getCurrentPosition(
-        (position) => {
-          setRegion({
-            ...region,
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          });
-        },
-        (error) => {
-          console.log(error.code, error.message);
-        },
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
-      );
+
+      let location = await Location.getCurrentPositionAsync({});
+      setRegion({
+        ...region,
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
     };
 
     requestLocationPermission();

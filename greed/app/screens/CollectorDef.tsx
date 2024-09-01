@@ -22,7 +22,7 @@ const CollectorDef: React.FC = () => {
     }
   };
 
-  const renderLocationItem = ({ item }) => (
+  const renderLocationItem = ({ item }: { item: { value: string; label: string } }) => (
     <TouchableOpacity
       style={styles.locationItem}
       onPress={() => {
