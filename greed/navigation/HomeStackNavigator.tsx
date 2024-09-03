@@ -1,8 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import HomeScreen from '../app/screens/HomeScreen';
-import ChatScreen from '../app/screens/ChatScreen';
-import ProviderDef from '../app/screens/ProviderDef';
-import CollectorDef from '../app/screens/CollectorDef';
 import HomeProvider from '../app/screens/HomeProvider';
 import { ActivityIndicator, View, Text } from 'react-native';
 import { doc, getDoc } from 'firebase/firestore';
@@ -41,7 +38,7 @@ const HomePage = () => {
   }
 
   // Render different components based on the role
-  if (role === "Collector") {
+  if (role === "Collecteur") {
     return <HomeScreen />;
   } else if (role === "Provider") {
     return <HomeProvider />;

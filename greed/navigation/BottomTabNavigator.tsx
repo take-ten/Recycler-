@@ -32,14 +32,14 @@ export default function BottomTabNavigator() {
         name="Home"
         component={HomeStackNavigator}
         options={{
-          headerShown: false,
+          
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home" color={color} size={size} />
           ),
         }}
        />
-      <Tab.Screen name="History" component={HistoryScreen} options={{ headerShown: false }} />
-      <Tab.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false }} />
+      <Tab.Screen name="History" component={HistoryScreen}  />
+      <Tab.Screen name="Profile" component={ProfileScreen}  />
     </Tab.Navigator>
   );
 }

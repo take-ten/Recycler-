@@ -1,11 +1,29 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Image, TextInput, Modal, FlatList } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { useDispatch } from 'react-redux';
+import { setRole } from '../../store/authSlice';
 import { locations } from '../../components/locations';
-import { login } from '../../store/authSlice';
 
 const ProviderDef: React.FC = () => {
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const navigation = useNavigation();
+  const dispatch = useDispatch();
+
+  const handleConfirm = () => {
+    if (selectedLocation) {
+      const location = locations.find(loc => loc.value === selectedLocation);
+      if (location) {
+        dispatch(setRole('Provider'));
+        navigation.navigate('ProviderLocation', { location });
+      } else {
+        alert('Invalid location selected.');
+      }
+    } else {
+      alert('Veuillez sélectionner un lieu.');
+    }
+  };
 
   const renderLocationItem = ({ item }) => (
     <TouchableOpacity
@@ -18,7 +36,7 @@ const ProviderDef: React.FC = () => {
       <Text style={styles.locationText}>{item.label}</Text>
     </TouchableOpacity>
   );
-console.log(selectedLocation)
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.birds}>
@@ -45,7 +63,7 @@ console.log(selectedLocation)
         />
       </View>
 
-      <TouchableOpacity style={styles.button} >
+      <TouchableOpacity style={styles.button} onPress={handleConfirm}>
         <Text style={styles.buttonText}>Confirmer</Text>
       </TouchableOpacity>
 
@@ -79,62 +97,54 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
   },
-  input: {
-    alignItems: 'center',
-    fontSize: 20,
-    fontWeight: 'normal',
-    color: 'black',
-    marginBottom: 20,
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   birds: {
-    marginBottom: 90,
-    width: '100%',
-    height: '100%',
-    flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
+  },
+  image: {
+    width: 100,
+    height: 100,
+    marginVertical: 20,
   },
   text: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: 'black',
-    marginBottom: 20,
-    top: 1,
+    textAlign: 'center',
+    marginVertical: 20,
   },
-  image: {
-    width: 317,
-    height: 291,
-    borderRadius: 25,
-    marginBottom: 20,
+  dropdown: {
+    backgroundColor: '#f0f0f0',
+    borderRadius: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    marginBottom: 15,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  dropdownText: {
+    fontSize: 16,
+  },
+  input: {
+    backgroundColor: '#f0f0f0',
+    borderRadius: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    marginBottom: 15,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
   },
   button: {
     backgroundColor: 'green',
-    padding: 15,
+    borderRadius: 10,
+    paddingVertical: 15,
     alignItems: 'center',
-    justifyContent: 'center',
-    margin: 20,
-    borderRadius: 5,
+    marginHorizontal: 20,
   },
   buttonText: {
     color: 'white',
     fontSize: 16,
-  },
-  dropdown: {
-    alignSelf: 'center',
-    borderColor: 'gray',
-    borderWidth: 1,
-    borderRadius: 5,
-    padding: 10,
-    width: '80%',
-    marginBottom: 20,
-  },
-  dropdownText: {
-    color: 'black',
+    fontWeight: 'bold',
   },
   modalContainer: {
     flex: 1,

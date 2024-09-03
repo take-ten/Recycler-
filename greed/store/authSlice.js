@@ -69,6 +69,15 @@ const authSlice = createSlice({
       state.isLoggedIn = true;
       AsyncStorage.setItem('user', JSON.stringify(action.payload)); // Save user data to AsyncStorage
     },
+    logout(state) {
+      state.user = null;
+      state.userId = null;
+      state.role = null;
+      state.isLoggedIn = false;
+      AsyncStorage.removeItem('user');
+      AsyncStorage.removeItem('userId');
+      AsyncStorage.removeItem('role');
+    },
   },
 });
 
@@ -82,6 +91,7 @@ export const {
   setUserId,
   setRole,
   login,
+  logout,
 } = authSlice.actions;
 
 export default authSlice.reducer;

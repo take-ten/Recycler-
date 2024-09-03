@@ -3,7 +3,7 @@
   "main": "expo/AppEntry",
   "version": "1.0.0",
   "scripts": {
-    "start": "expo start",
+    "start": "expo start --port 8090",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.2",
+    "@mapbox/polyline": "^1.2.1",
     "@react-native-async-storage/async-storage": "1.23.1",
     "@react-native-google-signin/google-signin": "^12.2.1",
     "@react-navigation/bottom-tabs": "^6.6.1",
@@ -23,7 +24,7 @@
     "@react-navigation/native-stack": "^6.11.0",
     "@react-navigation/stack": "^6.4.1",
     "@reduxjs/toolkit": "^2.2.7",
-    "crypto": "^1.0.1",
+    "axios": "^1.7.7",
     "crypto-js": "^4.2.0",
     "dotenv": "^16.4.5",
     "expo": "~51.0.28",
@@ -44,7 +45,6 @@
     "react-dom": "18.2.0",
     "react-native": "0.74.5",
     "react-native-camera": "^4.2.1",
-    "react-native-crypto-js": "^1.0.0",
     "react-native-dotenv": "^3.4.11",
     "react-native-elements": "^3.4.3",
     "react-native-geolocation-service": "^5.3.1",

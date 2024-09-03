@@ -8,11 +8,11 @@ const ProfileScreen = () => {
   const dispatch = useDispatch();
 
   const handleLogOut = async () => {
-try {
-  await dispatch(logout());
-} catch (error) {
-  console.error('Error during logout:', error);
-}
+    try {
+      dispatch(logout());
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
   };
 
   return (
