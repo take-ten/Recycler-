@@ -40,12 +40,27 @@ export const getDirections = async (
     }
 
     const route = response.data.routes[0];
+<<<<<<< HEAD
     const points = Polyline.decode(route.overview_polyline.points).map(([latitude, longitude]) => ({ latitude, longitude }));
     const distance = route.legs[0].distance.text;
     const duration = route.legs[0].duration.text;
 
     console.log('Directions fetched:', { points, distance, duration });
     return { points, distance, duration };
+=======
+    const points = Polyline.decode(route.overview_polyline.points).map(
+      (point: [number, number]) => ({
+        latitude: point[0],
+        longitude: point[1],
+      })
+    );
+
+    return {
+      points: points,
+      distance: route.legs[0].distance.text,
+      duration: route.legs[0].duration.text
+    };
+>>>>>>> 75ad49a051d961d3304c1554ac4c3782b7e7e4f1
   } catch (error) {
     console.error('Error fetching directions:', error);
     throw error;
@@ -86,7 +101,10 @@ export const getGeocoding = async (address: string): Promise<GeocodingResult> =>
     }
 
     const result = response.data.results[0];
+<<<<<<< HEAD
     console.log('Geocoding fetched:', result);
+=======
+>>>>>>> 75ad49a051d961d3304c1554ac4c3782b7e7e4f1
     return {
       lat: result.geometry.location.lat,
       lng: result.geometry.location.lng,

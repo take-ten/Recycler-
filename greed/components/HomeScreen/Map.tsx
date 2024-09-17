@@ -138,6 +138,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  container: {
+    flex: 1,
+  },
   map: {
     width: width,
     height: height * 0.75,
@@ -150,7 +153,10 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: 'white',
+    backgroundColor: 'white',
     padding: 10,
+    borderRadius: 20,
+    marginBottom: 10,
     borderRadius: 20,
     marginBottom: 10,
   },
