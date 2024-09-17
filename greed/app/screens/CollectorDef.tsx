@@ -1,24 +1,37 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Image, Modal, FlatList } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Image, Modal, FlatList, Alert } from 'react-native';
 import { useDispatch } from 'react-redux';
-// import { setLocation } from '../store/authSlice';
+import { setDoc, doc } from 'firebase/firestore';
+import { db } from '../../firebaseConfig';
+import { getAuth } from 'firebase/auth';
 import { locations } from '../../components/locations';
 import { login } from '../../store/authSlice';
+
 const CollectorDef: React.FC = () => {
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const dispatch = useDispatch();
-// meme soucis que le provider ..
 
-// a conntinuer avec skander pour eviter les erreurs et regler setLocation dans l'authActions
-
-
-  const handleLocationSelection = () => {
+  const handleLocationSelection = async () => {
     if (selectedLocation) {
-      // dispatch(setLocation(selectedLocation)); 
-      dispatch(login());
+      try {
+        const user = getAuth().currentUser;
+        if (user) {
+          await setDoc(doc(db, 'users', user.uid), {
+            location: selectedLocation,
+          }, { merge: true });
+
+          Alert.alert('Success', 'Location saved successfully');
+          
+          // Dispatch actions
+          dispatch(login());
+        }
+      } catch (error) {
+        console.error('Error saving location:', error);
+        Alert.alert('Error', 'Failed to save location');
+      }
     } else {
-      alert('Veuillez sélectionner un lieu.');
+      Alert.alert('Veuillez sélectionner un lieu.');
     }
   };
 

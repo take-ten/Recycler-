@@ -6,6 +6,8 @@ import { auth, db } from '../../firebaseConfig';
 import { setDoc, doc } from 'firebase/firestore';
 import GoogleSignInButton from '../../components/GoogleSignInButton';
 import CryptoJS from 'crypto-js';
+import Loading from '../../components/Loading'; // Import Loading component
+import { useLoading } from '../../components/LoadingContext'; // Import useLoading hook
 
 const SignUp = () => {
   const navigation = useNavigation();
@@ -13,6 +15,7 @@ const SignUp = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const { loading, setLoading } = useLoading(); // Use loading context
 
   // Function to handle user sign up
   const handleSignUp = async () => {
@@ -21,6 +24,8 @@ const SignUp = () => {
       return;
     }
 
+    setLoading(true); // Set loading to true when sign up starts
+
     try {
       const hashedPassword = CryptoJS.SHA256(password).toString(); // Hash the password
       const result = await createUserWithEmailAndPassword(auth, email, password);
@@ -28,7 +33,7 @@ const SignUp = () => {
 
       // Save user data to Firestore
       await setDoc(doc(db, 'users', user.uid), {
-        name: username,
+        displayName: username,
         uid: user.uid,
         email: user.email,
         password: hashedPassword, 
@@ -48,8 +53,14 @@ const SignUp = () => {
       navigation.navigate('RoleScreen', { userId: user.uid });
     } catch (error) {
       Alert.alert('Erreur', error.message);
+    } finally {
+      setLoading(false); // Set loading to false after sign up attempt
     }
   };
+
+  if (loading) {
+    return <Loading />; // Show loading spinner while sign up is in progress
+  }
 
   return (
     <View style={styles.container}>
@@ -76,13 +87,13 @@ const SignUp = () => {
       />
       <TextInput
         style={styles.input}
-        placeholder="Veuillez confirmer votre mot de passe"
+        placeholder="Confirmez le mot de passe"
         secureTextEntry
         value={confirmPassword}
         onChangeText={setConfirmPassword}
       />
       <TouchableOpacity style={styles.registerButton} onPress={handleSignUp}>
-        <Text style={styles.registerButtonText}>Enregistrer</Text>
+        <Text style={styles.registerButtonText}>S'inscrire</Text>
       </TouchableOpacity>
       <Text style={styles.orText}>ou inscrivez-vous avec</Text>
       <View style={styles.socialButtonsContainer}>

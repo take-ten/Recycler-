@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "294221732007",
+    "project_id": "greed-d302a",
+    "storage_bucket": "greed-d302a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:294221732007:android:12764a5504abe2627ea382",
+        "android_client_info": {
+          "package_name": "com.greed.firebase"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "294221732007-eotc2ve4nci7curgitbapei11rb632io.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.greed.firebase",
+            "certificate_hash": "1490d2eef6fd2d6934754059120cc779b787104b"
+          }
+        },
+        {
+          "client_id": "294221732007-6c0431eiaeaa71g5huf1j20tg4n24r6s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBEYSTeKqpsRbneQbc4nSfhkQPEpo5wr9E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "294221732007-6c0431eiaeaa71g5huf1j20tg4n24r6s.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "294221732007-u2v5cib99qgkcdmuh42roqll40t7a2gf.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.greed.firebase"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

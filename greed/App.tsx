@@ -6,16 +6,20 @@ import { Provider } from 'react-redux';
 import store from './store/store';
 import { useSelector, useDispatch } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { login, setUserId, setRole } from './store/authSlice';
+import Loading from './components/Loading'; // Import Loading component
+import { LoadingProvider, useLoading } from './components/LoadingContext'; // Import Loading Context
 
 export default function App() {
   return (
     <Provider store={store}>
-      <NavigationContainer>
-        <StatusBar style="auto" />
-        <AppNavigator />
-      </NavigationContainer>
+      <LoadingProvider>
+        <NavigationContainer>
+          <StatusBar style="auto" />
+          <AppNavigator />
+        </NavigationContainer>
+      </LoadingProvider>
     </Provider>
   );
 }
@@ -23,6 +27,7 @@ export default function App() {
 const AppNavigator = () => {
   const isLoggedIn = useSelector((state: any) => state.auth.isLoggedIn);
   const dispatch = useDispatch();
+  const [loading, setLoading] = useState(true); // Add loading state
 
   useEffect(() => {
     const checkLoginState = async () => {
@@ -34,10 +39,15 @@ const AppNavigator = () => {
         dispatch(setUserId(userId));
         dispatch(setRole(role));
       }
+      setLoading(false); // Set loading to false after checking login state
     };
 
     checkLoginState();
   }, [dispatch]);
+
+  if (loading) {
+    return <Loading />; // Show loading spinner while checking login state
+  }
 
   return isLoggedIn ? <BottomTabNavigator /> : <OnboardingNavigation />;
 };

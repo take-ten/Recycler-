@@ -30,6 +30,7 @@ const authSlice = createSlice({
       };
       state.userId = action.payload.uid;
       state.isLoggedIn = true;
+      console.log('signInSuccess: user logged in', state.user); // Debug log
       AsyncStorage.setItem('user', JSON.stringify(state.user)); // Save user data to AsyncStorage
     },
     signInFailure(state, action) {
@@ -50,6 +51,7 @@ const authSlice = createSlice({
       };
       state.userId = action.payload.uid;
       state.isLoggedIn = true;
+      console.log('signUpSuccess: user signed up', state.user); // Debug log
       AsyncStorage.setItem('user', JSON.stringify(state.user)); // Save user data to AsyncStorage
     },
     signUpFailure(state, action) {
@@ -58,16 +60,29 @@ const authSlice = createSlice({
     },
     setUserId(state, action) {
       state.userId = action.payload;
+      console.log('setUserId:', action.payload); // Debug log
       AsyncStorage.setItem('userId', action.payload); // Save userId to AsyncStorage
     },
     setRole(state, action) {
       state.role = action.payload;
+      console.log('setRole:', action.payload); // Debug log
       AsyncStorage.setItem('role', action.payload); // Save role to AsyncStorage
     },
     login(state, action) {
       state.user = action.payload;
       state.isLoggedIn = true;
+      console.log('login: user logged in', state.user); // Debug log
       AsyncStorage.setItem('user', JSON.stringify(action.payload)); // Save user data to AsyncStorage
+    },
+    logout(state) {
+      state.user = null;
+      state.userId = null;
+      state.role = null;
+      state.isLoggedIn = false;
+      console.log('logout: user logged out'); // Debug log
+      AsyncStorage.removeItem('user');
+      AsyncStorage.removeItem('userId');
+      AsyncStorage.removeItem('role');
     },
   },
 });
@@ -82,6 +97,7 @@ export const {
   setUserId,
   setRole,
   login,
+  logout,
 } = authSlice.actions;
 
 export default authSlice.reducer;

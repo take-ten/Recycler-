@@ -40,7 +40,15 @@ const GoogleSignInButtonComponent = () => {
 
       const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
       if (!userDoc.exists()) {
-        // Navigate to RoleScreen before setting the user document
+        // Create the user document before navigating to RoleScreen
+        await setDoc(doc(db, 'users', firebaseUser.uid), {
+          token: googleCredential.idToken,
+          displayName: firebaseUser.displayName,
+          email: firebaseUser.email,
+          photoURL: firebaseUser.photoURL
+        });
+
+        // Navigate to RoleScreen
         navigation.navigate('RoleScreen', { userId: firebaseUser.uid, googleCredential });
       } else {
         await setDoc(doc(db, 'users', firebaseUser.uid), {
@@ -94,5 +102,4 @@ const GoogleSignInButtonComponent = () => {
 };
 
 export default GoogleSignInButtonComponent;
-
 

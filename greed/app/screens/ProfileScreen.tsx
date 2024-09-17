@@ -8,11 +8,12 @@ const ProfileScreen = () => {
   const dispatch = useDispatch();
 
   const handleLogOut = async () => {
-try {
-  await dispatch(logout());
-} catch (error) {
-  console.error('Error during logout:', error);
-}
+    try {
+      dispatch(logout());
+      console.log('User logged out');
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
   };
 
   return (
@@ -28,23 +29,23 @@ try {
       {/* Input Fields */}
       <View style={styles.inputContainer}>
         <TextInput
-          placeholder="E-Mail ou Tel"
           style={styles.input}
+          placeholder="Nom d'utilisateur"
         />
         <TextInput
-          placeholder="Mot de passe"
-          secureTextEntry
           style={styles.input}
+          placeholder="E-Mail"
+          keyboardType="email-address"
         />
         <TextInput
-          placeholder="Veuillez confirmer votre mot de passe"
-          secureTextEntry
           style={styles.input}
+          placeholder="Téléphone"
+          keyboardType="phone-pad"
         />
       </View>
 
       {/* Update Button */}
-      <TouchableOpacity style={[styles.updateButton, { marginTop: 40 }]}>
+      <TouchableOpacity style={styles.updateButton}>
         <Text style={styles.updateButtonText}>Mettre à jour</Text>
       </TouchableOpacity>
     </SafeAreaView>
@@ -54,13 +55,11 @@ try {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
     padding: 20,
+    backgroundColor: '#fff',
   },
   logoutIcon: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
+    alignSelf: 'flex-end',
   },
   header: {
     fontSize: 24,

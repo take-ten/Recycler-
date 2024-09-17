@@ -1,112 +1,176 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TextInput, TouchableOpacity, FlatList } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useDispatch } from 'react-redux';
-import { addMessage } from '../../store/chatSlice';
-import { getDocs, collection, query, where, addDoc, doc, updateDoc } from 'firebase/firestore';
-import { db } from '../../firebaseConfig';
-import { getAuth } from 'firebase/auth';
-import { useRoute } from '@react-navigation/native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, TextInput, FlatList, Alert, ActivityIndicator } from 'react-native';
+import { getDoc, doc, updateDoc, onSnapshot, getDocs, collection } from 'firebase/firestore';
+import { auth, db } from '../../firebaseConfig';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import * as ImagePicker from 'expo-image-picker';
+import MessageItem from '../../components/messages/MessageItem';
 
-const ChatScreen = ({key}:{key:any}) => {
-  const dispatch = useDispatch();
-  const route = useRoute();
-  const getter = route.params;
-  const chatId= JSON.parse(JSON.stringify(getter));
+const ChatScreen = ({ chatId, onBack }) => {
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [newMessage, setNewMessage] = useState('');
+  const [selectedChat, setSelectedChat] = useState<any>(null);
+  const [userNames, setUserNames] = useState<{ [key: string]: { name: string, businessName: string | null, avatarUrl?: string } }>({});
+  const [sending, setSending] = useState(false);
+  const userId = auth.currentUser?.uid;
+  const flatListRef = useRef<FlatList>(null);
 
-  const [messages, setMessages] = useState<any[]>([]);
-  const [inputText, setInputText] = useState('');
-  const userId = getAuth().currentUser?.uid;
-//lets fetch the messages from the chat using the chatId
+  const requestCameraPermission = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    setHasPermission(status === 'granted');
+  };
 
-useEffect(() => {
-  const fetchMessages = async () => {
+  useEffect(() => {
+    requestCameraPermission();
+    fetchChat();
+    fetchUserNames();
+  }, []);
+
+  useEffect(() => {
+    if (selectedChat) {
+      flatListRef.current?.scrollToEnd({ animated: true });
+    }
+  }, [selectedChat]);
+
+  const fetchUserNames = async () => {
     try {
-      const q = query(collection(db, 'chats'), where('id', '==', chatId));
-      const querySnapshot = await getDocs(q);
-      const chatData = querySnapshot.docs[0]?.data();
-      setMessages(chatData?.messages || []);
-
+      const usersSnapshot = await getDocs(collection(db, 'users'));
+      const usersData = usersSnapshot.docs.reduce((acc, doc) => {
+        acc[doc.id] = doc.data();
+        return acc;
+      }, {});
+      setUserNames(usersData);
     } catch (error) {
-      console.error('Error fetching messages:', error);
+      console.error('Error fetching user names:', error);
     }
   };
 
+  const fetchChat = async () => {
+    try {
+      const chatDocRef = doc(db, 'chats', chatId);
+      const chatDoc = await getDoc(chatDocRef);
+      setSelectedChat({ id: chatDoc.id, ...chatDoc.data() });
 
-  if (chatId) {
-    fetchMessages();
-  }
-}, []);
+      const unsubscribe = onSnapshot(chatDocRef, (doc) => {
+        setSelectedChat({ id: doc.id, ...doc.data() });
+      });
 
-  useEffect(() => {
-    if (!chatId) {
-      console.error('Chat or chat.id is undefined');
+      return () => unsubscribe();
+    } catch (error) {
+      console.error('Error fetching chat:', error);
+    }
+  };
+
+  const handleSelectImage = async () => {
+    if (hasPermission === null || hasPermission === false) {
+      Alert.alert('Permission Denied', 'Camera permission not granted');
       return;
     }
 
-    const fetchMessages = async () => {
-      try {
-        const q = query(collection(db, 'chats'), where('id', '==', chatId));
-        const querySnapshot = await getDocs(q);
-        const chatData = querySnapshot.docs[0]?.data();
-        setMessages(chatData?.messages || []);
-      } catch (error) {
-        console.error('Error fetching messages:', error);
-      }
-    };
+    let result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 0.5,
+      base64: true,
+    });
 
-    fetchMessages();
-  }, [chatId]);
-
-  const handleSend = async () => {
-    if (inputText.trim()) {
-      const newMessage = {
-        text: inputText,
-        sender: userId,
-        timestamp: new Date().toISOString(),
-      };
-
-      try {
-        const chatRef = doc(db, 'chats', chatId);
-        await updateDoc(chatRef, {
-          messages: [...messages, newMessage],
-        });
-
-        dispatch(addMessage({ chatId: chatId, message: newMessage }));
-        setMessages(prevMessages => [...prevMessages, { id: Date.now().toString(), ...newMessage }]);
-        setInputText('');
-      } catch (error) {
-        console.error('Error sending message:', error);
-      }
+    if (!result.canceled && result.assets) {
+      const base64Image = result.assets[0].base64;
+      handleSendMessage(`data:image/jpeg;base64,${base64Image}`);
+    } else {
+      Alert.alert('Error', 'Image capture cancelled or base64 is undefined');
     }
   };
 
-  const renderItem = ({ item }: { item: any }) => (
-    <View style={[styles.messageBubble, item.sender === userId ? styles.myMessage : styles.otherMessage]}>
-      <Text style={styles.messageText}>{item.text}</Text>
-    </View>
-  );
+  const handleSendMessage = async (message: string) => {
+    if (!selectedChat || !userId || !message.trim()) return;
+
+    setSending(true);
+
+    const chatDocRef = doc(db, 'chats', selectedChat.id);
+
+    const newMessageObj = {
+      senderName: userNames[userId]?.name || 'Unknown',
+      senderId: userId,
+      text: message,
+      timestamp: new Date(),
+    };
+
+    try {
+      const chatDoc = await getDoc(chatDocRef);
+      const currentMessages = chatDoc.data()?.messages || [];
+      const updatedMessages = [...currentMessages, newMessageObj];
+
+      await updateDoc(chatDocRef, {
+        messages: updatedMessages,
+      });
+
+      setNewMessage('');
+      flatListRef.current?.scrollToEnd({ animated: true });
+    } catch (error) {
+      console.error('Error sending message:', error);
+      Alert.alert('Error', 'Failed to send message. Please try again.', error.message);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const renderItem = ({ item }) => {
+    const isCurrentUser = item.senderId === userId;
+    const senderName = userNames[item.senderId]?.name || 'Unknown';
+    const avatarUrl = userNames[item.senderId]?.avatarUrl || 'https://avatar.iran.liara.run/public/boy';
+
+    return (
+      <MessageItem
+        provider={senderName}
+        message={item.text}
+        isCurrentUser={isCurrentUser}
+        avatarUrl={avatarUrl}
+        timestamp={item.timestamp}
+      />
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.header}>Chat with {chatId.name?.receiverId || 'Unknown'}</Text>
-      <FlatList
-        data={messages}
-        renderItem={renderItem}
-        keyExtractor={item => item.timestamp}
-        contentContainerStyle={styles.messagesContainer}
-      />
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Votre message ici ..."
-          value={inputText}
-          onChangeText={setInputText}
-        />
-        <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
-          <Ionicons name="send" size={24} color="white" />
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity onPress={onBack} style={styles.backButton}>
+      <Ionicons name="arrow-back" size={24} color="black"  />
+      </TouchableOpacity>
+      {selectedChat ? (
+        <View style={styles.chatContainer}>
+          <FlatList
+            ref={flatListRef}
+            data={selectedChat.messages}
+            renderItem={renderItem}
+            keyExtractor={(item, index) => index.toString()}
+            onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+          />
+          <View style={styles.inputContainer}>
+            <TouchableOpacity onPress={handleSelectImage}>
+              <Icon name="camera" size={24} color="grey" style={styles.cameraIcon} />
+            </TouchableOpacity>
+            <TextInput
+              style={styles.input}
+              value={newMessage}
+              onChangeText={setNewMessage}
+              placeholder="votre message ..."
+              placeholderTextColor="grey"
+            />
+            <TouchableOpacity onPress={() => handleSendMessage(newMessage)} style={styles.sendButton} disabled={sending}>
+              {sending ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Ionicons name="send" size={24} color="white" />
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      ) : (
+        <View>
+          <Text style={styles.header}>Loading Chat...</Text>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
@@ -116,53 +180,57 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
   },
-  header: {
-    fontSize: 24,
+  backButton: {
+    padding: 10,
+    // backgroundColor: '#4CAF50',
+    borderRadius: 5,
+    margin: 10,
+  },
+  backButtonText: {
+    color: 'white',
     fontWeight: 'bold',
-    textAlign: 'center',
-    marginVertical: 20,
   },
-  messagesContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  messageBubble: {
-    borderRadius: 20,
-    padding: 15,
-    marginVertical: 5,
-    maxWidth: '80%',
-  },
-  myMessage: {
-    backgroundColor: '#a0e75a',
-    alignSelf: 'flex-end',
-  },
-  otherMessage: {
-    backgroundColor: '#f0f0f0',
-    alignSelf: 'flex-start',
-  },
-  messageText: {
-    fontSize: 16,
+  chatContainer: {
+    flex: 1,
+    justifyContent: 'space-between',
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 10,
     borderTopWidth: 1,
-    borderColor: '#e0e0e0',
+    borderTopColor: 'white',
+    backgroundColor: '#f2f1f0',
+    borderRadius: 20,
+  },
+  cameraIcon: {
+    marginRight: 10,
   },
   input: {
     flex: 1,
-    backgroundColor: '#f0f0f0',
+    borderWidth: 1,
+    borderColor: 'white',
+    borderRadius: 4,
+    padding: 10,
+    marginRight: 10,
     borderRadius: 20,
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    fontSize: 16,
   },
   sendButton: {
-    backgroundColor: '#a0e75a',
-    borderRadius: 20,
+    backgroundColor: '#4CAF50',
     padding: 10,
-    marginLeft: 10,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sendButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginVertical: 20,
   },
 });
 

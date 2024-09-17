@@ -7,7 +7,7 @@ import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAuth } from 'firebase/auth';
 import { logout } from '@/store/authSlice';
-
+import Loading from '../../components/Loading'; // Import Loading component
 
 const HomeProvider = () => {
   const dispatch = useDispatch();
@@ -15,7 +15,7 @@ const HomeProvider = () => {
   const [role, setRole] = useState(null);
   const [isCollectorCalled, setIsCollectorCalled] = useState(false);
   const [points, setPoints] = useState(0); // Assuming you'll fetch this value from Firestore
-  const [gg, setGG] = useState ('');
+  const [loading, setLoading] = useState(true); // Add loading state
 
   useEffect(() => {
     const fetchPoints = async () => {
@@ -27,8 +27,8 @@ const HomeProvider = () => {
         const userData = userDoc.data();
         setPoints(userData.points);
         setRole(userData.role);
-        
       }
+      setLoading(false); // Set loading to false after data is fetched
     };
     fetchPoints();
   }, []);
@@ -41,9 +41,6 @@ const HomeProvider = () => {
 
   useEffect(() => {
     if (role !== 'Provider') {
-      // dispatch(logout());
-      // navigation.navigate('Onboarding' as never);
-
       console.log('role from logout console log',role);
     }
   }, [role, navigation]);
@@ -67,9 +64,14 @@ const HomeProvider = () => {
       console.error('Error updating user status:', error);
     }
   };
+
   const name = getAuth().currentUser?.displayName;
   console.log(name);
-  console.log(gg);
+
+  if (loading) {
+    return <Loading />; // Show loading spinner while data is being fetched
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.pointsContainer}>
@@ -77,7 +79,6 @@ const HomeProvider = () => {
       </View>
       <View style={styles.content}>
         <Text style={styles.greeting}>Bonjour Mr, {name}</Text>
-        
         <Text style={styles.instructionText}>
           {isCollectorCalled 
             ? "Appuyez ici si le collecteur est passé"
@@ -95,7 +96,6 @@ const HomeProvider = () => {
             ICI
           </Text>
         </Pressable>
-        
         <Text style={styles.instructionText2}>
           Si vous avez besoin d'assistance, appuyez
         </Text>

@@ -9,15 +9,19 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '../../firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
 import CryptoJS from 'crypto-js'; // Import crypto-js
+import Loading from '../../components/Loading'; // Import Loading component
+import { useLoading } from '../../components/LoadingContext'; // Import useLoading hook
 
 const SignIn = () => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const { loading, setLoading } = useLoading(); // Use loading context
   const role = useSelector((state: any) => state.auth.role);
 
   const handleLogin = async () => {
+    setLoading(true); // Set loading to true when login starts
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
       const user = result.user;
@@ -29,7 +33,7 @@ const SignIn = () => {
 
         if (hashedPassword === userData.password) { // Compare hashed password
           dispatch(login({ email, password }));
-          navigation.navigate(role === 'Provider' ? 'ProviderDef' : 'CollectorDef');
+          navigation.navigate(userData.role === 'Provider' ? 'ProviderDef' : 'CollectorDef');
         } else {
           Alert.alert('Erreur', 'Mot de passe incorrect.');
         }
@@ -38,12 +42,18 @@ const SignIn = () => {
       }
     } catch (error) {
       Alert.alert('Erreur', error.message);
+    } finally {
+      setLoading(false); // Set loading to false after login attempt
     }
   };
 
   const loginWithGoogle = () => {
     dispatch<any>(handleGoogleLogin());
   };
+
+  if (loading) {
+    return <Loading />; // Show loading spinner while login is in progress
+  }
 
   return (
     <View style={styles.container}>

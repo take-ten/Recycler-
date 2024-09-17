@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>294221732007-u2v5cib99qgkcdmuh42roqll40t7a2gf.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.294221732007-u2v5cib99qgkcdmuh42roqll40t7a2gf</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>294221732007-ksujn9nk4s795v9i9f0hmanhuqrhdiuc.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCwOjTrV8fzeWrPgrvJEiEX4YzPiEae6as</string>
+	<key>GCM_SENDER_ID</key>
+	<string>294221732007</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.greed.firebase</string>
+	<key>PROJECT_ID</key>
+	<string>greed-d302a</string>
+	<key>STORAGE_BUCKET</key>
+	<string>greed-d302a.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:294221732007:ios:915e38f3d49e91c37ea382</string>
+</dict>
+</plist>

@@ -1,9 +1,9 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import MessageScreen from '../app/screens/ChatScreen';
 import ProfileScreen from '../app/screens/ProfileScreen';
 import HomeStackNavigator from './HomeStackNavigator';
-import HistoryScreen from '@/app/screens/HistoryScreen';
+import HistoryNavigation from './HistoryNavigation';
+import About from '../app/screens/About';
 
 const Tab = createBottomTabNavigator();
 
@@ -21,6 +21,9 @@ export default function BottomTabNavigator() {
           } else if (route.name === 'Profile') {
             iconName = 'person';
           }
+          else if (route.name === 'About') {
+            iconName = 'information-circle';
+          }
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
@@ -32,14 +35,14 @@ export default function BottomTabNavigator() {
         name="Home"
         component={HomeStackNavigator}
         options={{
-          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home" color={color} size={size} />
           ),
         }}
-       />
-      <Tab.Screen name="History" component={HistoryScreen} options={{ headerShown: false }} />
-      <Tab.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false }} />
+      />
+      <Tab.Screen name="History" component={HistoryNavigation} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="About" component={About} />
     </Tab.Navigator>
   );
 }

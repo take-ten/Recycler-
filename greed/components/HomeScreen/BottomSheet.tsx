@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, TextInput, Button } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, TextInput, Button, Alert } from 'react-native';
 import { Badge } from 'react-native-elements';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -7,10 +7,10 @@ import { collection, addDoc, doc, updateDoc, onSnapshot, getDoc, getDocs, query,
 import { getFirestore } from 'firebase/firestore';
 import Modal from 'react-native-modal';
 import { FlatList } from 'react-native';
-import {db} from '../../firebaseConfig';
+import { db } from '../../firebaseConfig';
 import { getAuth } from 'firebase/auth';
 import { useSelector } from 'react-redux';
-
+import * as Location from 'expo-location';
 
 const { height } = Dimensions.get('window');
 
@@ -20,18 +20,36 @@ interface User {
   status: string;
   collectorId?: string;
   picker?: string | null;
+  location?: {
+    latitude: number;
+    longitude: number;
+  };
 }
 
-const BottomSheet = () => {
-  const navigation = useNavigation();
+const BottomSheet = ({ onProviderSelect }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [message, setMessage] = useState('');
+  const [currentLocation, setCurrentLocation] = useState<Location.LocationObject | null>(null);
 
   const currentUserId = getAuth().currentUser?.uid;
   const userId = useSelector((state: any) => state.auth.userId);
-  console.log('currentUserId!!!!!',currentUserId)
+
+  useEffect(() => {
+    const fetchCurrentLocation = async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission to access location was denied');
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setCurrentLocation(location);
+    };
+
+    fetchCurrentLocation();
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
@@ -60,6 +78,10 @@ const BottomSheet = () => {
           picker: null,
         });
         console.log('User status updated:', userId);
+
+        // Show the message bubble
+        setSelectedUserId(userId);
+        setIsModalVisible(true);
       } else {
         console.error('User document does not exist:', userId);
       }
@@ -67,7 +89,7 @@ const BottomSheet = () => {
       console.error('Error updating user status:', error);
     }
   };
-  console.log('users', users)
+
   const handleOpenModal = (userId: string) => {
     setSelectedUserId(userId);
     setIsModalVisible(true);
@@ -146,7 +168,10 @@ const BottomSheet = () => {
   };
 
   const filteredUsers = users.filter(
-    (user) => user.status === 'ready' || user.collectorId === currentUserId
+    (user) =>
+      user.status === 'ready'
+      // Math.abs(user.location.latitude - currentLocation.coords.latitude) < 0.1 &&
+      // Math.abs(user.location.longitude - currentLocation.coords.longitude) < 0.1
   );
 
   return (
@@ -161,7 +186,7 @@ const BottomSheet = () => {
               containerStyle={styles.badge}
             />
             <TouchableOpacity onPress={() => handleStatusReady(item.id)}>
-              <Text style={styles.providerText}>{item.name}</Text>
+              <Text style={styles.providerText}>{item.displayName}</Text>
             </TouchableOpacity>
             <View style={styles.statusContainer}>
               {item.collectorId !== currentUserId && (
@@ -199,6 +224,7 @@ const BottomSheet = () => {
             onChangeText={setMessage}
           />
           <Button title="Send" onPress={handleSendMessage} />
+          <Button title="Close" onPress={() => setIsModalVisible(false)} />
         </View>
       </Modal>
     </View>

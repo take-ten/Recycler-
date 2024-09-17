@@ -5,9 +5,7 @@ import { CheckBox } from 'react-native-elements';
 import { setDoc, doc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { useDispatch } from 'react-redux';
-import { setRole, signInSuccess, setUserId } from '../../store/authSlice';
-import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
-import { auth } from '../../firebaseConfig';
+import { setRole } from '../../store/authSlice';
 
 const RoleScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -34,25 +32,11 @@ const RoleScreen: React.FC = () => {
       await setDoc(doc(db, 'users', userId), { role }, { merge: true });
       dispatch(setRole(role));
 
-      if (googleCredential) {
-        const result = await signInWithCredential(auth, googleCredential);
-        const firebaseUser = result.user;
-
-        // Dispatch only serializable data
-        dispatch(signInSuccess({
-          uid: firebaseUser.uid,
-          displayName: firebaseUser.displayName,
-          email: firebaseUser.email,
-          photoURL: firebaseUser.photoURL
-        }));
-        dispatch(setUserId(firebaseUser.uid));
-      }
-
       // Navigate to the appropriate screen based on the role
       if (role === 'Provider') {
-        navigation.navigate('ProviderDef', { userId });
+        navigation.navigate('ProviderDef', { userId, googleCredential });
       } else if (role === 'Collecteur') {
-        navigation.navigate('CollectorDef', { userId });
+        navigation.navigate('CollectorDef', { userId, googleCredential });
       }
     } catch (error) {
       Alert.alert('Erreur', error.message);

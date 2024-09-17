@@ -1,7 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  messages: [],
+  chats: [],
+  selectedChat: null,
+  userNames: {},
   error: null,
   loading: false,
 };
@@ -10,33 +12,47 @@ const chatSlice = createSlice({
   name: 'chat',
   initialState,
   reducers: {
-    fetchMessagesStart(state) {
+    fetchChatsStart(state) {
       state.loading = true;
       state.error = null;
     },
-    fetchMessagesSuccess(state, action) {
+    fetchChatsSuccess(state, action) {
       state.loading = false;
-      state.messages = action.payload;
+      state.chats = action.payload;
     },
-    fetchMessagesFailure(state, action) {
+    fetchChatsFailure(state, action) {
       state.loading = false;
       state.error = action.payload;
     },
-    addMessage(state, action) {
-      state.messages.push(action.payload);
+    setSelectedChat(state, action) {
+      state.selectedChat = action.payload;
     },
-    clearMessages(state) {
-      state.messages = [];
+    updateSelectedChat(state, action) {
+      state.selectedChat = { ...state.selectedChat, ...action.payload };
+    },
+    setUserNames(state, action) {
+      state.userNames = action.payload;
+    },
+    addMessage(state, action) {
+      if (state.selectedChat) {
+        state.selectedChat.messages.push(action.payload);
+      }
+    },
+    clearSelectedChat(state) {
+      state.selectedChat = null;
     },
   },
 });
 
 export const {
-  fetchMessagesStart,
-  fetchMessagesSuccess,
-  fetchMessagesFailure,
+  fetchChatsStart,
+  fetchChatsSuccess,
+  fetchChatsFailure,
+  setSelectedChat,
+  updateSelectedChat,
+  setUserNames,
   addMessage,
-  clearMessages,
+  clearSelectedChat,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

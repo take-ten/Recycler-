@@ -1,47 +1,74 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Avatar } from 'react-native-elements';
+import { View, Text, StyleSheet, Image } from 'react-native';
 
-const MessageItem = ({ provider, message }) => {
+const MessageItem = ({ provider, message, isCurrentUser, avatarUrl, timestamp }) => {
+  // console.log('MessageItem rendered:', { provider, message, isCurrentUser, timestamp });
   return (
-    <View style={styles.container}>
-      <Avatar
-        rounded
-        size="medium"
-        containerStyle={styles.avatar}
-        source={{ uri: 'https://randomuser.me/api/portraits/men/1.jpg' }}
-      />
-      <View style={styles.textContainer}>
+    <View style={[styles.messageContainer, isCurrentUser ? styles.currentUserContainer : styles.otherUserContainer]}>
+      {!isCurrentUser && <Image source={{ uri: avatarUrl }} style={styles.avatar} />}
+      <View style={[styles.messageBubble, isCurrentUser ? styles.currentUserBubble : styles.otherUserBubble]}>
         <Text style={styles.providerText}>{provider}</Text>
-        <Text style={styles.messageText}>{message}</Text>
+        {message.startsWith('data:image/') ? (
+          <Image source={{ uri: message }} style={styles.messageImage} />
+        ) : (
+          <Text style={styles.messageText}>{message}</Text>
+        )}
+        <Text style={styles.timestamp}>{new Date(timestamp.seconds * 1000).toLocaleTimeString()}</Text>
       </View>
+      {isCurrentUser && <Image source={{ uri: avatarUrl }} style={styles.avatar} />}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  messageContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f0f0f0',
-    borderRadius: 10,
-    padding: 10,
+    alignItems: 'flex-start',
     marginVertical: 5,
-    marginHorizontal: 10,
   },
   avatar: {
-    marginRight: 10,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginHorizontal: 10,
   },
-  textContainer: {
-    flex: 1,
+  messageBubble: {
+    maxWidth: '70%',
+    padding: 10,
+    borderRadius: 10,
+    marginHorizontal: 10,
+    backgroundColor: '#f1f1f1',
+  },
+  currentUserContainer: {
+    justifyContent: 'flex-end',
+    alignItems: 'flex-end',
+  },
+  otherUserContainer: {
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+  },
+  currentUserBubble: {
+    backgroundColor: '#d0f0c0',
+  },
+  otherUserBubble: {
+    backgroundColor: '#f1f1f1',
   },
   providerText: {
-    fontSize: 16,
     fontWeight: 'bold',
+    marginBottom: 5,
   },
   messageText: {
-    fontSize: 14,
-    color: '#555',
+    fontSize: 16,
+  },
+  messageImage: {
+    width: 200,
+    height: 200,
+    borderRadius: 10,
+  },
+  timestamp: {
+    fontSize: 12,
+    color: 'grey',
+    marginTop: 5,
   },
 });
 

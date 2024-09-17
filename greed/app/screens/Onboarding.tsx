@@ -1,20 +1,14 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
-import { useDispatch } from 'react-redux';
-// import { login } from '../store/authSlice';
 import { useNavigation } from '@react-navigation/native';
-
 
 const OnboardingScreen = () => {
   const navigation = useNavigation();
-  const dispatch = useDispatch();
-
-
 
   return (
-    <View style={styles.container} >
+    <View style={styles.container}>
       <Image
-        source={require('../../assets/onboarding.png')}
+        source={require('../../assets/uran.png')}
         style={styles.image}
       />
       <Text style={styles.text}>
@@ -22,7 +16,13 @@ const OnboardingScreen = () => {
         Aidez-nous à combattre la pollution et redonnez le vert à notre planète.
         Ensemble, faisons la différence!
       </Text>
-      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('SignUp')}>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => {
+          navigation.navigate('SignUp');
+          console.log('Navigating to SignUp');
+        }}
+      >
         <Text style={styles.buttonText}>Rejoindre le mouvement</Text>
       </TouchableOpacity>
     </View>
